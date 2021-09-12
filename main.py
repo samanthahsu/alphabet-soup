@@ -10,7 +10,7 @@ window_y = 480
 
 # defining colors
 black = pygame.Color(0, 0, 0)
-white = pygame.Color(255, 255, 255)
+yellow = pygame.Color(255, 255, 0)
 red = pygame.Color(200, 0, 0)
 bright_red = pygame.Color(255, 0, 0)
 green = pygame.Color(0, 200, 0)
@@ -23,6 +23,7 @@ snake_speed = 15
 unit = 10
 font = 'comicsansms'
 high_score = 0
+default_msg = "Stomach Empty!"
 
 offscreen_x = 5000
 offscreen_y = 5000
@@ -37,11 +38,18 @@ game_window = pygame.display.set_mode((window_x, window_y))
 # FPS (frames per second) controller
 fps = pygame.time.Clock()
 
+pygame.mixer.init()
+# pygame.mixer.music.load('chomp_1.mp3')
+def play_chomp(file):
+    pygame.mixer.Sound.play(pygame.mixer.Sound('assets/' + file))
+
+play_chomp('chomp_1.mp3')
+
 
 def show_score(color, font, size, text, y_pos):
     score_font = pygame.font.SysFont(font, size)
     score_surface = score_font.render(text, True, color)
-    score_rect = score_surface.get_rect(y=y_pos)
+    score_rect = score_surface.get_rect(y=y_pos + 5, x=10)
     game_window.blit(score_surface, score_rect)
 
 # game over function
@@ -53,7 +61,7 @@ def text_objects(text, font, color=noodle_color):
     return textSurface, textSurface.get_rect()
 
 
-def button(text, x, y, w, h, initial_color, active_color, action=None):
+def button(text, x, y, w, h, initial_color, active_color, action=None, color = noodle_color):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
 
@@ -66,7 +74,7 @@ def button(text, x, y, w, h, initial_color, active_color, action=None):
         pygame.draw.rect(game_window, initial_color, (x, y, w, h))
 
     smallText = pygame.font.SysFont(font, 20)
-    textSurf, textRect = text_objects(text, smallText)
+    textSurf, textRect = text_objects(text, smallText, color)
     textRect.center = ((x+(w/2)), (y+(h/2)))
     game_window.blit(textSurf, textRect)
 
@@ -84,12 +92,12 @@ def quit_game():
 
 
 def get_food_pos():
-    return [random.randrange(1, (window_x//unit)) * unit,
-            random.randrange(1, (window_y//unit)) * unit]
+    return [random.randrange(100//unit, (window_x//unit)) * unit,
+            random.randrange(50//unit, (window_y//unit)) * unit]
 
 
 def get_food_letter():
-    return random.choice(string.ascii_lowercase)
+    return random.choice('aaaaabbcccddeeeeeefghghiiiijklllmmnnnnooooppqrrrrsssttttuuvwxyz')
 
 
 def is_word(word):
@@ -109,6 +117,11 @@ def is_word(word):
 def same_pos(snake_position, food_pos):
     return snake_position[0] == food_pos[0] and snake_position[1] == food_pos[1]
 
+def not_message(word):
+    return word + " is NOT a word"
+
+def get_word_points(word):
+    return len(word) ** 2
 
 def run_game():
     snake_position = [100, 50]
@@ -128,7 +141,7 @@ def run_game():
     change_to = direction
 
     score = 0
-    message = ""
+    message = default_msg
     while True:
         game_window.fill(soup_color)
 
@@ -141,6 +154,7 @@ def run_game():
                     if (len(word) > 0):
                         spawn_poop = True
                         word = ""
+                        message = default_msg
                 if event.key == pygame.K_UP:
                     change_to = 'UP'
                 if event.key == pygame.K_DOWN:
@@ -177,34 +191,37 @@ def run_game():
             snake_body.pop()
             show_score(score_color, font, 20, "", 20)
         elif same_pos(snake_position, food_pos):
+            play_chomp('chomp_2.mp3')
             score += 1
             word += food_letter
 
             if (is_word(word)):
-                message = word + " is a word! +" + str(len(word)) + "points."
-                score += len(word)
+                message = word + " is a word! +" + str(get_word_points(word)) + "points."
+                score += get_word_points(word)
             else:
-                message = ""
+                message = not_message(word)
             food_spawn = False
         elif same_pos(snake_position, food_pos_1):
+            play_chomp('chomp_1.mp3')
             score += 1
             word += food_letter_1
 
             if (is_word(word)):
-                message = word + " is a word! +" + str(len(word)) + "points."
-                score += len(word)
+                message = word + " is a word! +" + str(get_word_points(word)) + "points."
+                score += get_word_points(word)
             else:
-                message = ""
+                message = not_message(word)
             food_spawn = False
         elif same_pos(snake_position, food_pos_ex):
+            play_chomp('chomp_1.mp3')
             score += 1
             word += food_letter_ex
 
             if (is_word(word)):
-                message = word + " is a word! +" + str(len(word)) + "points."
-                score += len(word)
+                message = word + " is a word! +" + str(get_word_points(word)) + "points."
+                score += get_word_points(word)
             else:
-                message = ""
+                message = not_message(word)
             food_spawn = False
             food_pos_ex = [offscreen_x, offscreen_y]
         else:
@@ -243,8 +260,7 @@ def run_game():
                 intro_screen(score)
 
         show_score(score_color, font, 20, 'Score: ' + str(score), 0)
-        show_score(score_color, font, 20, 'Word: ' + word, 20)
-        show_score(score_color, font, 20, message, 40)
+        show_score(score_color, font, 20, message, 20)
 
         pygame.display.update()
 
@@ -270,26 +286,27 @@ def intro_screen(score):
         spacing = 25
         instructions_y = 70
         title_font = pygame.font.SysFont(font, 20)
-        title_title_font = pygame.font.SysFont(font, 30)
+        title_title_font = pygame.font.SysFont(font, 40)
         title_desc_font = pygame.font.SysFont(font, 15)
-        print_title('Alphabet Soup : Become Noodle', -50, title_title_font)
-        print_title('HighScore : ' + str(high_score) + ' ', 0, title_font)
-        print_title('Score : ' + str(score), 30, title_font)
+        print_title('ALPHABET SOUP', -70, title_title_font)
+        print_title('HighScore : ' + str(high_score) + ' ', 0, title_font, yellow)
+        print_title('Score : ' + str(score), 30, title_font, yellow)
         print_title('How to Play:', instructions_y, title_desc_font)
         print_title('eat letters to earn 1 point',
                     instructions_y + spacing, title_desc_font)
-        print_title('spell a valid word to earn points equal to that word\'s length',
+        print_title('SPELL a valid WORD to earn MORE points',
                     instructions_y + spacing * 2, title_desc_font)
-        print_title('press SPACE to *digest* the current collected letters',
+        print_title('press SPACE to *DIGEST* the current collected letters',
                     instructions_y + spacing * 3, title_desc_font)
         print_title('press the opposite direction you are going in to DIVE (avoid letters)',
                     instructions_y + spacing * 4, title_desc_font)
-        print_title('try to get as many points as possible!!!',
+        print_title('try to get as many points as possible and',
                     instructions_y + spacing * 5, title_desc_font)
+        print_title('BECOME NOODLE', instructions_y + spacing * 6, title_font)
 
         button_y = 150
         button("PLAY", window_x//3 - 50, window_y//2 + button_y,
-               100, 50, green, bright_green, run_game)
+               100, 50, green, bright_green, run_game, color=yellow)
         button("QUIT", 2 * window_x//3 - 50, window_y //
                2 + button_y, 100, 50, red, bright_red, quit_game)
 
@@ -297,8 +314,8 @@ def intro_screen(score):
         fps.tick(snake_speed)
 
 
-def print_title(text, y, title_font):
-    game_over_surface = title_font.render(text, True, noodle_color)
+def print_title(text, y, title_font, color = noodle_color):
+    game_over_surface = title_font.render(text, True, color)
     game_over_rect = game_over_surface.get_rect()
     game_over_rect.midtop = (window_x/2, window_y/4 + y)
     game_window.blit(game_over_surface, game_over_rect)
