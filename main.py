@@ -4,6 +4,7 @@ import random
 import string
 import requests
 import json
+import sys
 
 window_x = 720
 window_y = 480
@@ -285,7 +286,7 @@ def intro_screen(score):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit()
+                sys.exit()
 
         game_window.fill(soup_color)
 
