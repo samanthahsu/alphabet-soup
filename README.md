@@ -1,9 +1,9 @@
-Steps to Run
+🐝🍜
 ===
-1. Download the "main" folder
-2. Run the main.exe start the program. 
-3. Have fun! 
+Run main.exe to play!
 
-Relies on the free API https://api.dictionaryapi.dev/api/v2/entries/en/.\
-chomp.mp3 from https://freesound.org/s/412068/\
-submerge.mp3 from https://freesound.org/s/416710/
+Relies on the free API https://api.dictionaryapi.dev/api/v2/entries/en/  
+
+Audio Credits:
+chomp.mp3 from https://freesound.org/s/412068/  
+submerge.mp3 from https://freesound.org/s/416710/  
