@@ -1,3 +1,7 @@
-Run the main.exe in folder "main" to start the program. Have fun! 
+Steps to Run
+===
+1. Download the "main" folder
+2. Run the main.exe start the program. 
+3. Have fun! 
 
-Relies on Dictionary APIgit re
+Relies on the free API https://api.dictionaryapi.dev/api/v2/entries/en/.

@@ -24,9 +24,8 @@ unit = 10
 font = 'comicsansms'
 high_score = 0
 
-soup_valid_x_start = 100
-soup_valid_x_start = 60
-
+offscreen_x = 5000
+offscreen_y = 5000
 
 # Initialising pygame
 pygame.init()
@@ -84,19 +83,46 @@ def quit_game():
     quit()
 
 
+def get_food_pos():
+    return [random.randrange(1, (window_x//unit)) * unit,
+            random.randrange(1, (window_y//unit)) * unit]
+
+
+def get_food_letter():
+    return random.choice(string.ascii_lowercase)
+
+
+def is_word(word):
+    response_API = requests.get(
+        'https://api.dictionaryapi.dev/api/v2/entries/en/' + word)
+
+    if (isinstance(response_API.json(), list)):
+        response_str = str(response_API.json()[0])
+    else:
+        response_str = str(response_API.json())
+
+    return not ("No Definitions Found" in response_str or
+                "\'partOfSpeech\': \'abbreviation\'" in response_str or
+                "\'partOfSpeech\': \'symbol\'" in response_str)
+
+
+def same_pos(snake_position, food_pos):
+    return snake_position[0] == food_pos[0] and snake_position[1] == food_pos[1]
+
+
 def run_game():
     snake_position = [100, 50]
     snake_body = [[100, 100]]
     word = ""
 
-    food_pos = [random.randrange(1, (window_x//unit)) * unit,
-                random.randrange(1, (window_y//unit)) * unit]
     food_spawn = True
-    food_letter = random.choice(string.ascii_lowercase)
-
-    food_pos_1 = [random.randrange(1, (window_x//unit)) * unit,
-                  random.randrange(1, (window_y//unit)) * unit]
-    food_letter_1 = random.choice(string.ascii_lowercase)
+    spawn_poop = False
+    food_pos = get_food_pos()
+    food_letter = get_food_letter()
+    food_pos_1 = get_food_pos()
+    food_letter_1 = get_food_letter()
+    food_pos_ex = [offscreen_x, offscreen_y]
+    food_letter_ex = get_food_letter()
 
     direction = 'DOWN'
     change_to = direction
@@ -104,13 +130,17 @@ def run_game():
     score = 0
     message = ""
     while True:
+        game_window.fill(soup_color)
+
         snake_color = noodle_color
         score_color = noodle_color
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    word = ""
+                    if (len(word) > 0):
+                        spawn_poop = True
+                        word = ""
                 if event.key == pygame.K_UP:
                     change_to = 'UP'
                 if event.key == pygame.K_DOWN:
@@ -146,56 +176,51 @@ def run_game():
         if snake_color == red:
             snake_body.pop()
             show_score(score_color, font, 20, "", 20)
-        elif snake_position[0] == food_pos[0] and snake_position[1] == food_pos[1]:
+        elif same_pos(snake_position, food_pos):
             score += 1
             word += food_letter
-            response_API = requests.get(
-                'https://api.dictionaryapi.dev/api/v2/entries/en/' + word)
 
-            if (isinstance(response_API.json(), list)):
-                response_str = str(response_API.json()[0])
-            else:
-                response_str = str(response_API.json())
-
-            if (not ("No Definitions Found" in response_str or "\'partOfSpeech\': \'abbreviation\'" in response_str)):
-                print(response_str)
+            if (is_word(word)):
                 message = word + " is a word! +" + str(len(word)) + "points."
                 score += len(word)
             else:
                 message = ""
             food_spawn = False
-        elif snake_position[0] == food_pos_1[0] and snake_position[1] == food_pos_1[1]:
+        elif same_pos(snake_position, food_pos_1):
             score += 1
             word += food_letter_1
-            response_API = requests.get(
-                'https://api.dictionaryapi.dev/api/v2/entries/en/' + word)
 
-            if (isinstance(response_API.json(), list)):
-                response_str = str(response_API.json()[0])
-            else:
-                response_str = str(response_API.json())
-
-            if (not ("No Definitions Found" in response_str or "\'partOfSpeech\': \'abbreviation\'" in response_str)):
-                print(response_str)
+            if (is_word(word)):
                 message = word + " is a word! +" + str(len(word)) + "points."
                 score += len(word)
             else:
                 message = ""
             food_spawn = False
+        elif same_pos(snake_position, food_pos_ex):
+            score += 1
+            word += food_letter_ex
+
+            if (is_word(word)):
+                message = word + " is a word! +" + str(len(word)) + "points."
+                score += len(word)
+            else:
+                message = ""
+            food_spawn = False
+            food_pos_ex = [offscreen_x, offscreen_y]
         else:
             snake_body.pop()
             show_score(score_color, font, 20, "", 20)
 
         if not food_spawn:
-            food_pos = [random.randrange(1, (window_x//unit)) * unit,
-                        random.randrange(1, (window_y//unit)) * unit]
-            food_letter = random.choice(string.ascii_lowercase)
-            food_pos_1 = [random.randrange(1, (window_x//unit)) * unit,
-                          random.randrange(1, (window_y//unit)) * unit]
-            food_letter_1 = random.choice(string.ascii_lowercase)
-
+            food_pos = get_food_pos()
+            food_letter = get_food_letter()
+            food_pos_1 = get_food_pos()
+            food_letter_1 = get_food_letter()
+        if spawn_poop:
+            food_pos_ex = snake_body[-1]
+            food_letter_ex = get_food_letter()
+            spawn_poop = False
         food_spawn = True
-        game_window.fill(soup_color)
 
         for pos in snake_body:
             pygame.draw.rect(game_window, snake_color, pygame.Rect(
@@ -204,6 +229,7 @@ def run_game():
         # render food
         render_food(food_letter, food_pos)
         render_food(food_letter_1, food_pos_1)
+        render_food(food_letter_ex, food_pos_ex)
 
         # Game Over conditions
         if snake_position[0] < 0 or snake_position[0] > window_x-unit:
@@ -231,7 +257,7 @@ def run_game():
 def intro_screen(score):
     # the intro code
     intro = True
-    
+
     while intro:
         # must handle OS event or will freeze
         for event in pygame.event.get():
@@ -240,21 +266,26 @@ def intro_screen(score):
                 quit()
 
         game_window.fill(soup_color)
-        
+
         spacing = 25
-        instructions_y = 130
+        instructions_y = 70
         title_font = pygame.font.SysFont(font, 20)
         title_title_font = pygame.font.SysFont(font, 30)
         title_desc_font = pygame.font.SysFont(font, 15)
-        print_title('Alphabet Soup', 0, title_title_font)
-        print_title('HighScore : ' + str(high_score) + ' ', 70, title_font)
-        print_title('Score : ' + str(score), 100, title_font)
+        print_title('Alphabet Soup : Become Noodle', -50, title_title_font)
+        print_title('HighScore : ' + str(high_score) + ' ', 0, title_font)
+        print_title('Score : ' + str(score), 30, title_font)
         print_title('How to Play:', instructions_y, title_desc_font)
-        print_title('eat letters to earn 1 point.', instructions_y + spacing, title_desc_font)
-        print_title('spell a valid words to earn points equal to the word length.', instructions_y + spacing * 2, title_desc_font)
-        print_title('try to get as many points as possible.', instructions_y + spacing * 3, title_desc_font)
-
-        # pygame.display.flip()
+        print_title('eat letters to earn 1 point',
+                    instructions_y + spacing, title_desc_font)
+        print_title('spell a valid word to earn points equal to that word\'s length',
+                    instructions_y + spacing * 2, title_desc_font)
+        print_title('press SPACE to *digest* the current collected letters',
+                    instructions_y + spacing * 3, title_desc_font)
+        print_title('press the opposite direction you are going in to DIVE (avoid letters)',
+                    instructions_y + spacing * 4, title_desc_font)
+        print_title('try to get as many points as possible!!!',
+                    instructions_y + spacing * 5, title_desc_font)
 
         button_y = 150
         button("PLAY", window_x//3 - 50, window_y//2 + button_y,
@@ -271,5 +302,6 @@ def print_title(text, y, title_font):
     game_over_rect = game_over_surface.get_rect()
     game_over_rect.midtop = (window_x/2, window_y/4 + y)
     game_window.blit(game_over_surface, game_over_rect)
+
 
 intro_screen(0)
