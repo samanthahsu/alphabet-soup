@@ -40,10 +40,8 @@ fps = pygame.time.Clock()
 
 pygame.mixer.init()
 # pygame.mixer.music.load('chomp_1.mp3')
-def play_chomp(file):
+def play_sound(file):
     pygame.mixer.Sound.play(pygame.mixer.Sound('assets/' + file))
-
-play_chomp('chomp_1.mp3')
 
 
 def show_score(color, font, size, text, y_pos):
@@ -127,6 +125,7 @@ def run_game():
     snake_position = [100, 50]
     snake_body = [[100, 100]]
     word = ""
+    submerge_played = True
 
     food_spawn = True
     spawn_poop = False
@@ -173,7 +172,14 @@ def run_game():
         elif change_to == 'RIGHT' and direction != 'LEFT':
             direction = 'RIGHT'
         else:
+            if not submerge_played:
+                play_sound('submerge.mp3')
+                submerge_played = True
             snake_color = red
+
+        if snake_color == noodle_color and submerge_played == True:
+            play_sound('submerge.mp3')
+            submerge_played = False
 
         # Moving the snake
         if direction == 'UP':
@@ -191,34 +197,34 @@ def run_game():
             snake_body.pop()
             show_score(score_color, font, 20, "", 20)
         elif same_pos(snake_position, food_pos):
-            play_chomp('chomp_2.mp3')
+            play_sound('chomp_2.mp3')
             score += 1
             word += food_letter
 
             if (is_word(word)):
-                message = word + " is a word! +" + str(get_word_points(word)) + "points."
+                message = word + " is a word! +" + str(get_word_points(word)) + " points."
                 score += get_word_points(word)
             else:
                 message = not_message(word)
             food_spawn = False
         elif same_pos(snake_position, food_pos_1):
-            play_chomp('chomp_1.mp3')
+            play_sound('chomp_1.mp3')
             score += 1
             word += food_letter_1
 
             if (is_word(word)):
-                message = word + " is a word! +" + str(get_word_points(word)) + "points."
+                message = word + " is a word! +" + str(get_word_points(word)) + " points."
                 score += get_word_points(word)
             else:
                 message = not_message(word)
             food_spawn = False
         elif same_pos(snake_position, food_pos_ex):
-            play_chomp('chomp_1.mp3')
+            play_sound('chomp_1.mp3')
             score += 1
             word += food_letter_ex
 
             if (is_word(word)):
-                message = word + " is a word! +" + str(get_word_points(word)) + "points."
+                message = word + " is a word! +" + str(get_word_points(word)) + " points."
                 score += get_word_points(word)
             else:
                 message = not_message(word)
@@ -234,6 +240,7 @@ def run_game():
             food_pos_1 = get_food_pos()
             food_letter_1 = get_food_letter()
         if spawn_poop:
+            play_sound('pop.mp3')
             food_pos_ex = snake_body[-1]
             food_letter_ex = get_food_letter()
             spawn_poop = False
@@ -271,10 +278,9 @@ def run_game():
 
 
 def intro_screen(score):
-    # the intro code
-    intro = True
-
-    while intro:
+    play_sound("pop.mp3")
+    
+    while True:
         # must handle OS event or will freeze
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -309,6 +315,8 @@ def intro_screen(score):
                100, 50, green, bright_green, run_game, color=yellow)
         button("QUIT", 2 * window_x//3 - 50, window_y //
                2 + button_y, 100, 50, red, bright_red, quit_game)
+        # button("SOUND", 2 * window_x//3 - 50, window_y //
+        #        2 + button_y, 100, 50, red, bright_red, quit_game)
 
         pygame.display.update()
         fps.tick(snake_speed)
