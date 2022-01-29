@@ -11,7 +11,7 @@ Requirements:
 * If snake touched edge or self the game is over with an option to restart
 * The game must be run from a file not the command line
 
-Relies on the free API https://api.dictionaryapi.dev/api/v2/entries/en/  
+Relies on dictionary data from: https://github.com/adambom/dictionary 
 
 Audio Credits:  
 chomp.mp3 from https://freesound.org/s/412068/  

@@ -1,8 +1,5 @@
 import pygame
-import time
 import random
-import string
-import requests
 import json
 import sys
 
@@ -31,6 +28,7 @@ offscreen_y = 5000
 
 # Initialising pygame
 pygame.init()
+data = json.load(open("assets/dictionary.json"))
 
 # Initialise game window
 pygame.display.set_caption('Alphabet Soup')
@@ -40,10 +38,9 @@ game_window = pygame.display.set_mode((window_x, window_y))
 fps = pygame.time.Clock()
 
 pygame.mixer.init()
-# pygame.mixer.music.load('chomp_1.mp3')
+
 def play_sound(file):
     pygame.mixer.Sound.play(pygame.mixer.Sound('assets/' + file))
-
 
 def show_score(color, font, size, text, y_pos):
     score_font = pygame.font.SysFont(font, size)
@@ -51,14 +48,9 @@ def show_score(color, font, size, text, y_pos):
     score_rect = score_surface.get_rect(y=y_pos + 5, x=10)
     game_window.blit(score_surface, score_rect)
 
-# game over function
-# when snake hits itself or the wall
-
-
 def text_objects(text, font, color=noodle_color):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
-
 
 def button(text, x, y, w, h, initial_color, active_color, action=None, color = noodle_color):
     mouse = pygame.mouse.get_pos()
@@ -100,17 +92,7 @@ def get_food_letter():
 
 
 def is_word(word):
-    response_API = requests.get(
-        'https://api.dictionaryapi.dev/api/v2/entries/en/' + word)
-
-    if (isinstance(response_API.json(), list)):
-        response_str = str(response_API.json()[0])
-    else:
-        response_str = str(response_API.json())
-
-    return not ("No Definitions Found" in response_str or
-                "\'partOfSpeech\': \'abbreviation\'" in response_str or
-                "\'partOfSpeech\': \'symbol\'" in response_str)
+    return word in data
 
 
 def same_pos(snake_position, food_pos):
