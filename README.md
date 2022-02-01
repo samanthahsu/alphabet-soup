@@ -1,9 +1,16 @@
-Steps to Run
+🐝🍜
 ===
-1. Download the "main" folder
-2. Run the main.exe start the program. 
-3. Have fun!
+*Run main.exe to play!*
 
-Relies on the free API https://api.dictionaryapi.dev/api/v2/entries/en/.\
-chomp.mp3 from https://freesound.org/s/412068/\
-submerge.mp3 from https://freesound.org/s/416710/
+The task was to create a snake game in Python. This is my first time doing anything this serious in Python, and found the bracket-less world to be quite fun! Will need to split the program into several files eventually... however that is a task for another day.
+Requirements:
+* Arrow keys control snake movement correctly
+* Snake must gain length after eating
+* If snake touched edge or self the game is over with an option to restart
+* The game must be run from a file not the command line
+
+Relies on dictionary data from: https://github.com/adambom/dictionary 
+
+Audio Credits:  
+chomp.mp3 from https://freesound.org/s/412068/  
+submerge.mp3 from https://freesound.org/s/416710/  
