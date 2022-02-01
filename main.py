@@ -51,10 +51,6 @@ def show_score(color, font, size, text, y_pos):
     score_rect = score_surface.get_rect(y=y_pos + 5, x=10)
     game_window.blit(score_surface, score_rect)
 
-# game over function
-# when snake hits itself or the wall
-
-
 def text_objects(text, font, color=noodle_color):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
